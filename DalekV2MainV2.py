@@ -33,6 +33,7 @@ hRes = 640               # PiCam Horizontal Resolution
 vRes = 480               # PiCam Virtical Resolution
 camera = 0               # Create PiCamera Object
 video_capture = 0        # Create WebCam Object
+soundvolume = 10         # Set Default Sound Volume
  
 #TRIG = 40  # Set the Trigger pin
 #ECHO = 38  # Set the Echo pin
@@ -218,7 +219,7 @@ def destroy():                 # Shutdown GPIO and Cleanup modules
     wii.rumble = 1
     time.sleep(0.5)
     wii.rumble = 0
-    player = subprocess.Popen(["mplayer", "Sound/Grow_stronger.mp3", "-ss", "30"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    player = subprocess.Popen(["mplayer", "Sound/Grow_stronger.mp3", "--volume=2"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     scrollphat.clear()         # Clear Scroll pHat
     GPIO.cleanup()             # Release GPIO resource
     
@@ -249,7 +250,7 @@ def ObstacleCourse():
         buttons = wii.state['buttons']          # Get WiiMote Button Pressed
         # Choose which task to do
         #keyp = readkey()                       # For Keyboard control
-        keyp = '0'                              # Dummy to stop errors
+        #keyp = '0'                              # Dummy to stop errors
         
         # If Plus and Minus buttons pressed
         # together then rumble and quit.
@@ -385,7 +386,7 @@ def LineFollowWebCam(showcam):
         buttons = wii.state['buttons']          # Get WiiMote Button Pressed
         # Choose which task to do
         #keyp = readkey()                       # For Keyboard control
-        keyp = '0'                              # Dummy to stop errors
+        #keyp = '0'                              # Dummy to stop errors
 
         if (buttons & cwiid.BTN_A):
             print 'Start Line Following'
@@ -399,7 +400,7 @@ def LineFollowWebCam(showcam):
                 buttons = wii.state['buttons']          # Get WiiMote Button Pressed
                 # Choose which task to do
                 #keyp = readkey()                       # For Keyboard control
-                keyp = '0'                              # Dummy to stop errors
+                #keyp = '0'                              # Dummy to stop errors
             
                 if (buttons & cwiid.BTN_HOME):
                     DalekV2Drive.stop()
@@ -546,19 +547,19 @@ def maincontrol(showcam):                  # Main Control Loop
             print 'ObstacleCourse'
             scrollphat.clear()         # Clear Scroll pHat
             scrollphat.write_string("OC")
-            player = subprocess.Popen(["mplayer", "Sound/Rant.mp3", "-ss", "30"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            player = subprocess.Popen(["mplayer", "Sound/Rant.mp3", "--volume=2"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             ObstacleCourse()
         elif (buttons & cwiid.BTN_DOWN):
             print 'StreightLine'
             scrollphat.clear()         # Clear Scroll pHat
             scrollphat.write_string("StL")
             #StreightLine()
-            player = subprocess.Popen(["mplayer", "Sound/Stay.mp3", "-ss", "30"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            player = subprocess.Popen(["mplayer", "Sound/Stay.mp3", "--volume=2"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         elif (buttons & cwiid.BTN_LEFT):
             print 'MinimalMaze'
             scrollphat.clear()         # Clear Scroll pHat
             scrollphat.write_string("MM")
-            player = subprocess.Popen(["mplayer", "Sound/IntruderLocated.mp3", "-ss", "30"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            player = subprocess.Popen(["mplayer", "Sound/IntruderLocated.mp3", "--volume=2"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             #MinimalMaze()
         elif (buttons & cwiid.BTN_RIGHT):
             print 'Golf'
@@ -568,7 +569,7 @@ def maincontrol(showcam):                  # Main Control Loop
         elif (buttons & cwiid.BTN_1):
             print 'Line Follow WebCam'
             scrollphat.clear()         # Clear Scroll pHat
-            player = subprocess.Popen(["mplayer", "Sound/IntruderLocated.mp3", "-ss", "30"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            player = subprocess.Popen(["mplayer", "Sound/IntruderLocated.mp3", "--volume=2"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             scrollphat.write_string("LiF")
             LineFollowWebCam(showcam)
 #        elif (buttons & cwiid.BTN_2):
@@ -580,13 +581,13 @@ def maincontrol(showcam):                  # Main Control Loop
             print '+'
             scrollphat.clear()         # Clear Scroll pHat
             scrollphat.write_string("+")
-            player = subprocess.Popen(["mplayer", "Sound/exterminate.mp3", "-ss", "30"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            player = subprocess.Popen(["mplayer", "Sound/exterminate.mp3", "--volume=2"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         elif (buttons & cwiid.BTN_MINUS):
             print '-'
             scrollphat.clear()         # Clear Scroll pHat
             scrollphat.write_string("-")
             #NotAssigned()
-        elif keyp == ' ' or (buttons & cwiid.BTN_HOME): #or (buttons & cwiid.BTN_A):
+        elif (buttons & cwiid.BTN_HOME): #or (buttons & cwiid.BTN_A):
             break
 
         DalekV2Drive.stop()
@@ -608,6 +609,7 @@ if __name__ == '__main__': # The Program will start from here
     parser.add_argument('-i',dest='InnerTurnSpeed', type=float, help='Speed of Inner wheels in a turn (0 - 100)') # Speed of Inner wheels in a turn
     parser.add_argument('-o',dest='OuterTurnSpeed', type=float, help='Speed of Inner wheels in a turn (0 - 100)') # Speed of Outer wheels in a turn
     parser.add_argument('-c',dest='ShowCam', type=bool, help='Show Image from Active Cam (True/False)')           # Show Image from Active Cam
+    parser.add_argument('-v',dest='SoundVolume', type=int, help='Set Sound volume (0 - 100)')                     # Set Sound Volume
     args = parser.parse_args()
     
     if ((str(args.RightSpeed)) != 'None'):
@@ -639,10 +641,25 @@ if __name__ == '__main__': # The Program will start from here
         showcam = args.ShowCam
     else:
         showcam = False
-  
+
+    if ((str(args.SoundVolume)) != 'None'):
+        print '\nSound Volume - ',(str(args.SoundVolume))
+        soundvolume = args.SoundVolume
+    else:
+        soundvolume = 10
+        print '\nSound Volume - ',soundvolume
+        
     print '\n\nSetting Up ...\n'
     scrollphat.clear()         # Clear Scroll pHat
     scrollphat.write_string("Set")
+    
+    #volumesetting = '"--volume=' + str(soundvolume) +'"'
+    volumesetting =  'subprocess.Popen(["mplayer", "Sound/Beginning.mp3", "--volume=' + str(soundvolume) +'"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)'
+    
+    print volumesetting
+
+    #player = subprocess.Popen(["mplayer", "Sound/Beginning.mp3", volumesetting], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    player = subprocess.Popen(["mplayer", "Sound/Beginning.mp3", "--volume=2"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     setup()           # Setup all motors and Wii
 
@@ -651,7 +668,6 @@ if __name__ == '__main__': # The Program will start from here
     scrollphat.write_string("Go")
 	
     try:
-        player = subprocess.Popen(["mplayer", "Sound/Beginning.mp3", "-ss", "30"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         maincontrol(showcam)    # Call main loop
         destroy()     # Shutdown
         print "\n\n................... Exit .......................\n\n"
