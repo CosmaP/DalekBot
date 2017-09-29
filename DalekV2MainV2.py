@@ -6,17 +6,18 @@
 # Module Imports
 import RPi.GPIO as GPIO  # Import GPIO divers
 import time              # Import the Time library
-import DalekV2Drive      # Import my 4 Motor controller
 import cwiid             # Import WiiMote code
 import argparse          # Import Argument Parser
 import scrollphat        # Import Scroll pHat code
 import numpy as np       # Import NumPy Array manipulation
 import cv2               # Import OpenCV Vision code
+import DalekV2Drive      # Import my 4 Motor controller
+import subprocess        # Import Modual to allow subprocess to be lunched
 
 #PiCamera imports
-from picamera.array import PiRGBArray
-from picamera import PiCamera
-import picamera
+#from picamera.array import PiRGBArray
+#from picamera import PiCamera
+#import picamera
 
 # End PiCamera Imports
 
@@ -39,37 +40,37 @@ video_capture = 0        # Create WebCam Object
 # End of single character reading
 #======================================================================
 
-#======================================================================
-# Reading single character by forcing stdin to raw mode
-import sys
-import tty
-import termios
+##======================================================================
+## Reading single character by forcing stdin to raw mode
+#import sys
+#import tty
+#import termios
 
-def readchar():
-    fd = sys.stdin.fileno()
-    old_settings = termios.tcgetattr(fd)
-    try:
-        tty.setraw(sys.stdin.fileno())
-        ch = sys.stdin.read(1)
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-    if ch == '0x03':
-        raise KeyboardInterrupt
-    return ch
+#def readchar():
+#    fd = sys.stdin.fileno()
+#    old_settings = termios.tcgetattr(fd)
+#    try:
+#        tty.setraw(sys.stdin.fileno())
+#        ch = sys.stdin.read(1)
+#    finally:
+#        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+#    if ch == '0x03':
+#        raise KeyboardInterrupt
+#    return ch
 
-def readkey(getchar_fn=None):
-    getchar = getchar_fn or readchar
-    c1 = getchar()
-    if ord(c1) != 0x1b:
-        return c1
-    c2 = getchar()
-    if ord(c2) != 0x5b:
-        return c1
-    c3 = getchar()
-    return chr(0x10 + ord(c3) - 65)  # 16=Up, 17=Down, 18=Right, 19=Left arrows
+#def readkey(getchar_fn=None):
+#    getchar = getchar_fn or readchar
+#    c1 = getchar()
+#    if ord(c1) != 0x1b:
+#        return c1
+#    c2 = getchar()
+#    if ord(c2) != 0x5b:
+#        return c1
+#    c3 = getchar()
+#    return chr(0x10 + ord(c3) - 65)  # 16=Up, 17=Down, 18=Right, 19=Left arrows
 
-# End of single character reading
-#======================================================================
+## End of single character reading
+##======================================================================
 
 #======================================================================
 # Initialisation procedures
@@ -84,30 +85,30 @@ def setup():                   # Setup GPIO and Initalise Imports
     #GPIO.setup(ECHO,GPIO.IN)  # Set the Echo pin to input
     DalekV2Drive.init()        # Initialise my software to control the motors
  
-    # Setup PiCam
     # initialize the camera and grab a reference to the raw camera capture
     global hRes                # Allow Access to PiCam Horizontal Resolution
     global vRes                # Allow Access to PiCam Vertical Resolution
-    global camera              # Allow Access to PiCamera Object
 
-    camera = picamera.PiCamera()
-    print "default resolution = " + str(camera.resolution) 
-    camera.resolution = (hRes,vRes)
-    print "updated resolution = " + str(camera.resolution) 
-    #camera.framerate = 32
-    camera.framerate = 60
-    #camera.hflip = True
-    camera.rotation = 180
+    # Setup PiCam
+#    global camera              # Allow Access to PiCamera Object
+
+#    camera = picamera.PiCamera()
+#    print "default resolution = " + str(camera.resolution) 
+#    camera.resolution = (hRes,vRes)
+#    print "updated resolution = " + str(camera.resolution) 
+#    #camera.framerate = 32
+#    camera.framerate = 60
+#    #camera.hflip = True
+#    camera.rotation = 180
  
     # Setup WebCam
-    global video_capture       # Allow Access to WebCam Object
+    global video_capture        # Allow Access to WebCam Object
     video_capture = cv2.VideoCapture(0)
     video_capture.set(3, hRes)
     video_capture.set(4, vRes)
 
-    print '\nPress some buttons!\n'
-    print 'Press PLUS and MINUS together to disconnect and quit.\n'
-
+    print '\nPress some buttons!\n'                                     # Give instructions for connecting Wiimote
+    print 'Press PLUS and MINUS together to disconnect and quit.\n'     # Give instructions for connecting Wiimote
   
 def setupwii():
     # Connect Wiimote
@@ -210,13 +211,14 @@ def destroy():                 # Shutdown GPIO and Cleanup modules
     scrollphat.write_string("Ext")
     DalekV2Drive.stop()        # Make sure Bot is not moving when program exits
     DalekV2Drive.cleanup()     # Shutdown all motor control
-    global camera              # Allow Access to PiCamera Object 
-    if camera._check_camera_open() == True:
-        camera.close()             # Shutdown Pi Camera
+#    global camera              # Allow Access to PiCamera Object 
+#    if camera._check_camera_open() == True:
+#        camera.close()             # Shutdown Pi Camera
     global wii
     wii.rumble = 1
     time.sleep(0.5)
     wii.rumble = 0
+    player = subprocess.Popen(["mplayer", "Sound/Grow_stronger.mp3", "-ss", "30"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     scrollphat.clear()         # Clear Scroll pHat
     GPIO.cleanup()             # Release GPIO resource
     
@@ -274,63 +276,63 @@ def ObstacleCourse():
             scrollphat.write_string("Nor")
             time.sleep(.25)
         
-        if keyp == 'w' or ord(keyp) == 16 or (buttons & cwiid.BTN_UP):
+        if (buttons & cwiid.BTN_UP):
             print 'Forward', speed
             scrollphat.clear()         # Shutdown Scroll pHat
             scrollphat.write_string("Fw")
             DalekV2Drive.forward(speed)
             time.sleep(.25)
-        elif keyp == 'z' or ord(keyp) == 17 or (buttons & cwiid.BTN_DOWN):
+        elif (buttons & cwiid.BTN_DOWN):
             print 'Backward', speed
             scrollphat.clear()         # Shutdown Scroll pHat
             scrollphat.write_string("Bw")
             DalekV2Drive.backward(speed)
             time.sleep(.25)
-        elif keyp == 'n' or ord(keyp) == 19 or (buttons & cwiid.BTN_LEFT):
+        elif (buttons & cwiid.BTN_LEFT):
             print 'Spin Left', speed
             scrollphat.clear()         # Shutdown Scroll pHat
             scrollphat.write_string("SL")
             DalekV2Drive.spinLeft(maxspeed)
             time.sleep(.25)
-        elif keyp == 'm' or ord(keyp) == 19 or (buttons & cwiid.BTN_RIGHT):
+        elif (buttons & cwiid.BTN_RIGHT):
             print 'Spin Right', speed
             scrollphat.clear()         # Shutdown Scroll pHat
             scrollphat.write_string("SR")
             DalekV2Drive.spinRight(maxspeed)
             time.sleep(.25)
-        elif keyp == 's' or ord(keyp) == 18 or (buttons & cwiid.BTN_1):
+        elif (buttons & cwiid.BTN_1):
             print 'Turn Right'
             scrollphat.clear()         # Shutdown Scroll pHat
             scrollphat.write_string("TrR")
             DalekV2Drive.turnForwardRight(outerturnspeed, innerturnspeed)
             time.sleep(.25)
-        elif keyp == 'a' or ord(keyp) == 19 or (buttons & cwiid.BTN_2):
+        elif (buttons & cwiid.BTN_2):
             print 'Turn Left'
             scrollphat.clear()         # Shutdown Scroll pHat
             scrollphat.write_string("TrL")
             DalekV2Drive.turnForwardLeft(innerturnspeed, outerturnspeed)
             time.sleep(.25)
-        elif keyp == '.' or keyp == '>' or (buttons & cwiid.BTN_PLUS):
+        elif (buttons & cwiid.BTN_PLUS):
             print 'Speed Up 1'
             scrollphat.clear()         # Shutdown Scroll pHat
             scrollphat.write_string("+1")
             if speed < 100:
                 speed = speed + 1
                 time.sleep(0.5)
-        elif keyp == ',' or keyp == '<' or (buttons & cwiid.BTN_MINUS):
+        elif (buttons & cwiid.BTN_MINUS):
             print 'Speed Down 1'
             scrollphat.clear()         # Shutdown Scroll pHat
             scrollphat.write_string("-1")
             if speed > 0:
                 speed = speed - 1
                 time.sleep(0.5)
-        elif keyp == ' ' or (buttons & cwiid.BTN_A):
+        elif (buttons & cwiid.BTN_A):
             print 'Stop'
             scrollphat.clear()         # Shutdown Scroll pHat
             scrollphat.write_string("Stp")
             DalekV2Drive.stop()
             time.sleep(.25)
-        elif keyp == ' ' or (buttons & cwiid.BTN_HOME):
+        elif (buttons & cwiid.BTN_HOME):
             DalekV2Drive.stop()
             scrollphat.clear()         # Shutdown Scroll pHat
             scrollphat.write_string("Hm")
@@ -342,7 +344,7 @@ def ObstacleCourse():
             print 'Left  - MinimaMaze'
             print 'Right - Golf'
             print '1     - Line Follow WebCam'
-            print '2     - Line Follow PiCam'
+#            print '2     - Line Follow PiCam'
             print 'Home  - Exit\n'
             print "Ready"
             break
@@ -496,173 +498,11 @@ def LineFollowWebCam(showcam):
             print 'Left  - MinimaMaze'
             print 'Right - Golf'
             print '1     - Line Follow WebCam'
-            print '2     - Line Follow PiCam'
+#            print '2     - Line Follow PiCam'
             print 'Home  - Exit\n'
             print "Ready"
             break
 
-def LineFollowPiCam(showcam):
-
-    global speed               # Allow access to 'speed' constant
-    global rightspeed          # Allow access to 'rightspeed' constant
-    global leftspeed           # Allow access to 'leftspeed' constant
-    global maxspeed            # Allow access to 'maxspeed' constant
-    global minspeed            # Allow access to 'minspeed' constant
-    global innerturnspeed      # Speed for Inner Wheels in a turn
-    global outerturnspeed      # Speed for Outer Wheels in a turn
-    global wii                 # Allow access to 'Wii' constants
-    global hRes                # Allow Access to PiCam Horizontal Resolution
-    global vRes                # Allow Access to PiCam Vertical Resolution
-    global camera              # Allow Access to PiCamera Object
-    
-    cx = 300                   # Go Streight
-    turnspeed = 95
-    speed = 30
-    
-    rawCapture = PiRGBArray(camera, size=(hRes, vRes))
-    #camera.capture(video_capture,format="bgr")
-    time.sleep(0.1)
-    
-    if camera._check_camera_open() == False:                            # check if VideoCapture object was associated to webcam successfully
-        print "error: capWebcam not accessed successfully\n\n"              # if not, print error message to std out
-        os.system("pause")                                                  # pause until user presses a key so user can see error message
-        #return                                                             # and exit function (which exits program)
-        exit()
-        # end if
-    
-    print'\nPress "A" to start Line following'
-    print'Press "Hm" to return to main menu\n'
-        
-    scrollphat.clear()         # Shutdown Scroll pHat
-    scrollphat.write_string('"A"')
-    time.sleep(.25)
-
-    while True:
-    
-        buttons = wii.state['buttons']          # Get WiiMote Button Pressed
-        # Choose which task to do
-        #keyp = readkey()                       # For Keyboard control
-        keyp = '0'                              # Dummy to stop errors
-
-        if (buttons & cwiid.BTN_A):
-            print 'Start Line Following'
-            scrollphat.clear()         # Shutdown Scroll pHat
-            scrollphat.write_string('LiF')
-            time.sleep(.25)
-            cx = 300                   # Go Streight
-            # capture frames from the camera
-            for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
-            # grab the raw NumPy array representing the image, then initialize the timestamp
-            # and occupied/unoccupied text
-                         
-                imgOriginal = frame.array
-                # print 'Wait...'
-                # clear the stream in preparation for the next frame
-                rawCapture.truncate(0)
- 
-                # Crop, select part of image to work with
-                crop_img = imgOriginal[380:480, 0:640]
-
-                # Make the image greyscale
-                gray = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
-
-                # uncomment next line to view greyscale image
-                #cv2.imshow('Gray',gray) 
- 
-                # Apply a Gaussian blur
-                blur = cv2.GaussianBlur(gray,(5,5),0)
-
-                # uncomment next line to view Blurred image
-                #cv2.imshow('Blur',blur)
- 
-                # Apply Color thresholding
-                ret,thresh = cv2.threshold(blur,100,255,cv2.THRESH_BINARY_INV)
-
-                # uncomment next line to view Threshholded image    
-                #cv2.imshow('Thresh',thresh)
-
-                # Find the contours in the cropped image part
-                img, contours, hierarchy = cv2.findContours(thresh.copy(), 1, cv2.CHAIN_APPROX_NONE)
-
-                # ---------------- Find the biggest contour = line -----------------
-    
-                if len(contours) > 0:
-                    c = max(contours, key=cv2.contourArea)
-                    M = cv2.moments(c)
- 
-                    cx = int(M['m10']/M['m00'])
-                    cy = int(M['m01']/M['m00'])
- 
-                    cv2.line(crop_img,(cx,0),(cx,720),(255,255,0),2)
-                    cv2.line(crop_img,(0,cy),(1280,cy),(0,255,0),2)
-                    cv2.drawContours(crop_img, contours, -1, (0,255,255), 2)
-
-                    # ---- Draw centre boundry lines (Steer straight)
-                    cv2.line(crop_img,(270,0),(270,480),(0,0,255),2)
-                    cv2.line(crop_img,(370,0),(370,480),(0,0,255),2)
-
-                if cx >= 370:
-                    RSteer = cx - 370
-                    SteerRight = remap(RSteer, 0, 45, 1, 270)
-                    print "Turn Right: ", SteerRight, cx
-                    scrollphat.clear()         # Shutdown Scroll pHat
-                    scrollphat.write_string("TrR")
-                    DalekV2Drive.spinRight(turnspeed)
-
-                # --------- On Track Routine ----------
-                if cx < 370 and cx > 270:
-                    print "On Track", cx
-                    scrollphat.clear()         # Shutdown Scroll pHat
-                    scrollphat.write_string("Fw")
-                    DalekV2Drive.forward(speed)
-
-                # --------- Steer Left Routine ----------
-                if cx <= 270:
-                    LSteer = 270 - cx
-                    SteerLeft = remap(LSteer, 0, 45, 1, 270)
-                    print "Turn Left: ", SteerLeft, cx
-                    scrollphat.clear()         # Shutdown Scroll pHat
-                    scrollphat.write_string("TrL")
-                    DalekV2Drive.spinLeft(turnspeed)
-                    
-                # ------ Show the resulting cropped image
-                if showcam == True:
-                    cv2.imshow('frame',crop_img)
-                # ------ Exit if Q pressed
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
-
-                buttons = wii.state['buttons']          # Get WiiMote Button Pressed
-                
-                if (buttons & cwiid.BTN_HOME):
-                    DalekV2Drive.stop()
-                    scrollphat.clear()         # Shutdown Scroll pHat
-                    scrollphat.write_string("Hm")
-                    print "\n\nReturning to Main Menu\n\n"
-                    time.sleep(1)
-                    print'\nPress "A" to start Line following'
-                    print'Press "Hm" to return to main menu\n'
-                    scrollphat.clear()         # Shutdown Scroll pHat
-                    scrollphat.write_string('"A"')
-                    time.sleep(.25)
-                    break
-                                
-        elif (buttons & cwiid.BTN_HOME):
-            DalekV2Drive.stop()
-            #camera.close()             # Shutdown PiCam
-            scrollphat.clear()         # Shutdown Scroll pHat
-            scrollphat.write_string("Hm")
-            print "\n\nReturning to Main Menu\n\n"
-            time.sleep(1)
-            print '\nUp    - ObstacleCourse'
-            print 'Down  - StreightLine'
-            print 'Left  - MinimaMaze'
-            print 'Right - Golf'
-            print '1     - Line Follow WebCam'
-            print '2     - Line Follow PiCam'
-            print 'Home  - Exit\n'
-            print "Ready"
-            break
             
 # End of Task Procedures  
 #======================================================================    
@@ -683,7 +523,7 @@ def maincontrol(showcam):                  # Main Control Loop
     print 'Left  - MinimaMaze'
     print 'Right - Golf'
     print '1     - Line Follow WebCam'
-    print '2     - Line Follow PiCam'
+#    print '2     - Line Follow PiCam'
     print 'Home  - Exit\n'
     
     wii.rpt_mode = cwiid.RPT_BTN
@@ -694,7 +534,7 @@ def maincontrol(showcam):                  # Main Control Loop
         buttons = wii.state['buttons']          # Get WiiMote Button Pressed
         # Choose which task to do
         #keyp = readkey()                       # For Keyboard control
-        keyp = '0'                              # Dummy to stop errors
+        #keyp = '0'                              # Dummy to stop errors
 
      
         # If Plus and Minus buttons pressed
@@ -702,42 +542,46 @@ def maincontrol(showcam):                  # Main Control Loop
         if (buttons - cwiid.BTN_PLUS - cwiid.BTN_MINUS == 0):  
             break  
  
-        if keyp == 'w' or ord(keyp) == 16 or (buttons & cwiid.BTN_UP):
+        if (buttons & cwiid.BTN_UP):
             print 'ObstacleCourse'
             scrollphat.clear()         # Clear Scroll pHat
             scrollphat.write_string("OC")
+            player = subprocess.Popen(["mplayer", "Sound/Rant.mp3", "-ss", "30"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             ObstacleCourse()
-        elif keyp == 'z' or ord(keyp) == 17 or (buttons & cwiid.BTN_DOWN):
+        elif (buttons & cwiid.BTN_DOWN):
             print 'StreightLine'
             scrollphat.clear()         # Clear Scroll pHat
             scrollphat.write_string("StL")
             #StreightLine()
-        elif keyp == 'n' or ord(keyp) == 19 or (buttons & cwiid.BTN_LEFT):
+            player = subprocess.Popen(["mplayer", "Sound/Stay.mp3", "-ss", "30"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        elif (buttons & cwiid.BTN_LEFT):
             print 'MinimalMaze'
             scrollphat.clear()         # Clear Scroll pHat
             scrollphat.write_string("MM")
+            player = subprocess.Popen(["mplayer", "Sound/IntruderLocated.mp3", "-ss", "30"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             #MinimalMaze()
-        elif keyp == 'm' or ord(keyp) == 19 or (buttons & cwiid.BTN_RIGHT):
+        elif (buttons & cwiid.BTN_RIGHT):
             print 'Golf'
             scrollphat.clear()         # Clear Scroll pHat
             scrollphat.write_string("Golf")
             #ObstacleCourse()
-        elif keyp == 's' or ord(keyp) == 18 or (buttons & cwiid.BTN_1):
+        elif (buttons & cwiid.BTN_1):
             print 'Line Follow WebCam'
             scrollphat.clear()         # Clear Scroll pHat
+            player = subprocess.Popen(["mplayer", "Sound/IntruderLocated.mp3", "-ss", "30"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             scrollphat.write_string("LiF")
             LineFollowWebCam(showcam)
-        elif keyp == 'a' or ord(keyp) == 19 or (buttons & cwiid.BTN_2):
-            print 'Line Follow PiCam'
-            scrollphat.clear()         # Clear Scroll pHat
-            scrollphat.write_string("LiF")
-            LineFollowPiCam(showcam)
-        elif keyp == '.' or keyp == '>' or (buttons & cwiid.BTN_PLUS):
+#        elif (buttons & cwiid.BTN_2):
+#            print 'Line Follow PiCam'
+#            scrollphat.clear()         # Clear Scroll pHat
+#            scrollphat.write_string("LiF")
+#            LineFollowPiCam(showcam)
+        elif (buttons & cwiid.BTN_PLUS):
             print '+'
             scrollphat.clear()         # Clear Scroll pHat
             scrollphat.write_string("+")
-            #NotAssigned()
-        elif keyp == ',' or keyp == '<' or (buttons & cwiid.BTN_MINUS):
+            player = subprocess.Popen(["mplayer", "Sound/exterminate.mp3", "-ss", "30"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        elif (buttons & cwiid.BTN_MINUS):
             print '-'
             scrollphat.clear()         # Clear Scroll pHat
             scrollphat.write_string("-")
@@ -807,6 +651,7 @@ if __name__ == '__main__': # The Program will start from here
     scrollphat.write_string("Go")
 	
     try:
+        player = subprocess.Popen(["mplayer", "Sound/Beginning.mp3", "-ss", "30"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         maincontrol(showcam)    # Call main loop
         destroy()     # Shutdown
         print "\n\n................... Exit .......................\n\n"
@@ -818,3 +663,4 @@ if __name__ == '__main__': # The Program will start from here
         
 # End of __Main__ Startup Loop 
 #======================================================================
+
