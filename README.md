@@ -14,11 +14,11 @@ usage: DalekV2MainV2.py [-h] [-r RIGHTSPEED] [-l LEFTSPEED] [-s SPEED] [-b BRIGH
 ..........<b>optional arguments:</b></br>
 .........-h, --help ----------------- Show this help message and exit</br>
 .........-r RIGHTSPEED ----------- Initial speed of Right motors (0 - 100)</br>
-.........-l LEFTSPEED ------------- Initial speed of Left Motors (0 - 100)</br>
-.........-s SPEED ----------------- Initial General speed of Motors (0 - 100)</br>
+.........-l LEFTSPEED -------------- Initial speed of Left Motors (0 - 100)</br>
+.........-s SPEED ------------------- Initial General speed of Motors (0 - 100)</br>
 .........-b BRIGHTNESS ----------- Brightness of scrollpHat (0 - 5)</br>
-.........-i INNERTURNSPEED ------ Speed of Inner wheels in a turn (0 - 100)</br>
-.........-o OUTERTURNSPEED ----- Speed of Inner wheels in a turn (0 - 100)</br>
+.........-i INNERTURNSPEED ----- Speed of Inner wheels in a turn (0 - 100)</br>
+.........-o OUTERTURNSPEED ---- Speed of Inner wheels in a turn (0 - 100)</br>
 .........-c SHOWCAM -------------- Show Image from Active Cam (True/False)</br>
-.........-v SOUNDVOLUME ------ Set Sound volume (0 - 100)</br>
+.........-v SOUNDVOLUME -------- Set Sound volume (0 - 100)</br>
 </p>
