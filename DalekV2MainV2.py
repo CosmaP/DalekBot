@@ -1,6 +1,27 @@
 #!/usr/bin/env python
 
 #======================================================================
+# Place holders.  These may or may not be required
+
+# Python 2/3 compatibility
+#from __future__ import print_function
+
+import sys
+sys.settrace
+#from glob import glob
+#import itertools as it
+import os
+from operator import itemgetter
+#import struct
+
+#from imutils.object_detection import non_max_suppression
+#from imutils import paths
+
+# End of Place holders
+#======================================================================
+
+
+#======================================================================
 # Start of Main Imports and setup constants
 
 # Module Imports
@@ -27,9 +48,12 @@ vRes = 480               # PiCam Virtical Resolution
 camera = 0               # Create PiCamera Object
 video_capture = 0        # Create WebCam Object
 soundvolume = 100        # Set Default Sound Volume
- 
-#TRIG = 40  # Set the Trigger pin
-#ECHO = 38  # Set the Echo pin
+TrigPinLeft = 35         # Set the Trigger pin for Left Sensor
+EchoPinLeft = 37         # Set the Echo pin for Left Sensor
+TrigPinCenter = 33       # Set the Trigger pin for Right Sensor
+EchoPinCenter = 31       # Set the Echo pin for Center Sensor
+TrigPinRight = 29        # Set the Trigger pin for Right Sensor
+EchoPinRight = 32        # Set the Echo pin for Right Sensor
 
 # End of Main Imports and setup constants
 #======================================================================
@@ -38,13 +62,27 @@ soundvolume = 100        # Set Default Sound Volume
 # Initialisation procedures
 
 def setup():                   # Setup GPIO and Initalise Imports
+
+    global TrigPinLeft         # Allow Access to Trigger pin for Left Sensor
+    global EchoPinLeft         # Allow Access to Echo pin for Left Sensor
+    global TrigPinCenter       # Allow Access to Trigger pin for Right Sensor
+    global EchoPinCenter       # Allow Access to Echo pin for Center Sensor
+    global TrigPinRight        # Allow Access to Trigger pin for Right Sensor
+    global EchoPinRight        # Set the Echo pin for Right Sensor
+    
     connected = False
     while connected == False:
         connected = setupwii() # Setup and connect to WiiMote
-    #GPIO.setmode(GPIO.BOARD)  # Set the GPIO pins as numbering - Set in DalekV2Drive.py
+    GPIO.setmode(GPIO.BOARD)   # Set the GPIO pins as numbering - Also set in DalekV2Drive.py
     GPIO.setwarnings(False)    # Turn GPIO warnings off - CAN ALSO BE Set in DalekV2Drive.py
-    #GPIO.setup(TRIG,GPIO.OUT) # Set the Trigger pin to output
-    #GPIO.setup(ECHO,GPIO.IN)  # Set the Echo pin to input
+
+    GPIO.setup(TrigPinLeft,GPIO.OUT)   # Set the Left Trigger pin to output
+    GPIO.setup(EchoPinLeft,GPIO.IN)    # Set the Left Echo pin to input
+    GPIO.setup(TrigPinCenter,GPIO.OUT) # Set the Center Trigger pin to output
+    GPIO.setup(EchoPinCenter,GPIO.IN)  # Set the Center Echo pin to input
+    GPIO.setup(TrigPinRight,GPIO.OUT)  # Set the Right Trigger pin to output
+    GPIO.setup(EchoPinRight,GPIO.IN)   # Set the Right Echo pin to input
+    
     DalekV2Drive.init()        # Initialise my software to control the motors
  
     # initialize the camera and grab a reference to the raw camera capture
@@ -59,6 +97,8 @@ def setup():                   # Setup GPIO and Initalise Imports
 
     print '\nPress some buttons!\n'                                     # Give instructions for connecting Wiimote
     print 'Press PLUS and MINUS together to disconnect and quit.\n'     # Give instructions for connecting Wiimote
+    
+#======================================================================
   
 def setupwii():
     # Connect Wiimote
@@ -121,10 +161,11 @@ def setupwii():
 #======================================================================
 # Service Procedures
    
-def getdistance(distance):
+def getdistance(distance, TRIG, ECHO):
     GPIO.output(TRIG, False)
-    print "Waiting For Sensor To Settle"
+    #print "Waiting For Sensor To Settle"
     time.sleep(0.05)
+    pulse_start = 0
     pulse_end = 0
 
     GPIO.output(TRIG, True)
@@ -132,22 +173,52 @@ def getdistance(distance):
     GPIO.output(TRIG, False)
 
     while GPIO.input(ECHO)==0:
-        # print 'start', GPIO.input(ECHO)
+        #print 'start', GPIO.input(ECHO)
         pulse_start = time.time()
   
     while GPIO.input(ECHO)==1:
-        # print 'stop', GPIO.input(ECHO)
+        #print 'stop', GPIO.input(ECHO)
         pulse_end = time.time()
 
     pulse_duration = pulse_end - pulse_start
     distance = pulse_duration * 17150
     distance = round(distance, 2)
-    print "Distance:",distance,"cm"
+    #print "Distance:",distance,"cm"
     return distance
+
+#======================================================================
     
 # ---- Function definition for converting scales ------
 def remap(unscaled, to_min, to_max, from_min, from_max):
     return (to_max-to_min)*(unscaled-from_min)/(from_max-from_min)+to_min
+    
+def inside(r, q):
+    rx, ry, rw, rh = r
+    qx, qy, qw, qh = q
+    return rx > qx and ry > qy and rx + rw < qx + qw and ry + rh < qy + qh
+
+#======================================================================
+
+#def draw_detections(img, rects, thickness = 1):
+#    # pick = non_max_suppression(rects, probs=None, overlapThresh=0.65)
+#    for x, y, w, h in rects:
+#        # the HOG detector returns slightly larger rectangles than the real objects.
+#        # so we slightly shrink the rectangles to get a nicer output.
+#        pad_w, pad_h = int(0.15*w), int(0.05*h)
+#        cv2.rectangle(img, (x+pad_w, y+pad_h), (x+w-pad_w, y+h-pad_h), (0, 255, 0), thickness)
+#    # end for
+#    return
+    
+#======================================================================
+def updateServoMotorPositions(pwm, panServoPosition, tiltServoPosition):
+    panDutyCycle = ((float(panServoPosition) * 0.3) + 15) * 10
+    tiltDutyCycle = ((float(tiltServoPosition) * 0.1555556) + 20) * 10
+    
+    #pwmPanObject.ChangeDutyCycle(panDutyCycle)
+    pwm.setPWM(servoHorizontalPort, 0, int(panDutyCycle))
+    #pwmTiltObject.ChangeDutyCycle(tiltDutyCycle)
+    pwm.setPWM(servoVerticalPort, 0, int(tiltDutyCycle))
+# end function
     
 # End of Service Procedures    
 #======================================================================
@@ -168,9 +239,10 @@ def destroy():                 # Shutdown GPIO and Cleanup modules
     wii.rumble = 1
     time.sleep(0.5)
     wii.rumble = 0
+    cv2.destroyAllWindows()    # Shutdown any open windows
     volumesetting = '"--volume=' + str(soundvolume) +'"'
     subprocess.Popen(["mplayer",volumesetting, "Sound/Grow_stronger.mp3"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    time.sleep(5)
+    time.sleep(7)
     scrollphat.clear()         # Clear Scroll pHat
     GPIO.cleanup()             # Release GPIO resource
     
@@ -293,20 +365,125 @@ def ObstacleCourse():
             print '\nUp    - ObstacleCourse'
             print 'Down  - StreightLine'
             print 'Left  - MinimaMaze'
-            print 'Right - Golf'
-            print '1     - Line Follow WebCam'
-#            print '2     - Line Follow PiCam'
+            print 'Right - Chase the Rainbow'
+            print '1     - Line Follow'
+#            print '2     - xxxxxx'
             print 'Home  - Exit\n'
             print "Ready"
             break
     
-#def StreightLine():
+def StreightLine():
+
+    global speed               # Allow access to 'speed' constant
+    global rightspeed          # Allow access to 'rightspeed' constant
+    global leftspeed           # Allow access to 'leftspeed' constant
+    global maxspeed            # Allow access to 'maxspeed' constant
+    global minspeed            # Allow access to 'minspeed' constant
+    global innerturnspeed      # Speed for Inner Wheels in a turn
+    global outerturnspeed      # Speed for Outer Wheels in a turn
+    global wii                 # Allow access to 'Wii' constants
+    global soundvolume         # Allow access to sound volume
+    global TrigPinLeft         # Allow Access to Trigger pin for Left Sensor
+    global EchoPinLeft         # Allow Access to Echo pin for Left Sensor
+    global TrigPinCenter       # Allow Access to Trigger pin for Right Sensor
+    global EchoPinCenter       # Allow Access to Echo pin for Center Sensor
+    global TrigPinRight        # Allow Access to Trigger pin for Right Sensor
+    global EchoPinRight        # Set the Echo pin for Right Sensor
+    
+    leftdistance = 0           # Prime Left distance variable
+    centerdistance = 0         # Prime Center distance variable
+    rightdistance = 0          # Prime Right distance variable
+    
+    print'\nPress "A" to start Streight Line run'
+    print'Press "Hm" to return to main menu\n'
+        
+    scrollphat.clear()         # Shutdown Scroll pHat
+    scrollphat.write_string('"A"')
+    time.sleep(.25)
+
+    while True:
+    
+        buttons = wii.state['buttons']          # Get WiiMote Button Pressed
+
+        if (buttons & cwiid.BTN_A):
+            print 'Start Streight Line run'
+            scrollphat.clear()         # Shutdown Scroll pHat
+            scrollphat.write_string('SLR')
+            time.sleep(.25)
+            
+            while True:
+            
+                DalekV2Drive.forward(maxspeed)
+            
+                buttons = wii.state['buttons']          # Get WiiMote Button Pressed
+                # Choose which task to do
+                if (buttons & cwiid.BTN_HOME):
+                    DalekV2Drive.stop()
+                    print'\nPress "A" to start Streight Line run'
+                    print'Press "Hm" to return to main menu\n'
+                    scrollphat.clear()         # Shutdown Scroll pHat
+                    scrollphat.write_string('"A"')
+                    time.sleep(.25)
+                    break
+                # End if
+                
+                leftdistance = getdistance(leftdistance, TrigPinLeft, EchoPinLeft)
+                centerdistance = getdistance(centerdistance, TrigPinCenter, EchoPinCenter)
+                rightdistance = getdistance(rightdistance, TrigPinRight, EchoPinRight)
+                
+                scrollphat.write_string(str(leftdistance))
+                print 'Left Distance :', leftdistance, 'Center Distance :', centerdistance, 'Right Distance :', rightdistance
+                
+                if centerdistance <= 2:
+                    DalekV2Drive.stop()
+                    print '\nCenter Distance :', centerdistance, 'Run Finished\n\n'
+                    print'\nPress "A" to start Streight Line run'
+                    print'Press "Hm" to return to main menu\n'
+                    scrollphat.clear()         # Shutdown Scroll pHat
+                    scrollphat.write_string('"A"')
+                    time.sleep(.25)
+                    break
+                # End if
+                 
+                if leftdistance <= 5:
+                    scrollphat.clear()         # Shutdown Scroll pHat
+                    scrollphat.write_string('TrR')
+                    DalekV2Drive.turnForwardRight(outerturnspeed, innerturnspeed)
+                    time.sleep(.1)
+                    DalekV2Drive.forward(maxspeed)
+                # End if
+                    
+                if rightdistance <= 5:
+                    scrollphat.clear()         # Shutdown Scroll pHat
+                    scrollphat.write_string('TrL')
+                    DalekV2Drive.turnForwardLeft(innerturnspeed, outerturnspeed)
+                    time.sleep(.1)
+                    DalekV2Drive.forward(maxspeed)
+                # End if
+
+            # End While
+                
+        elif (buttons & cwiid.BTN_HOME):
+            DalekV2Drive.stop()
+            scrollphat.clear()         # Shutdown Scroll pHat
+            scrollphat.write_string("Hm")
+            print "\n\nReturning to Main Menu\n\n"
+            time.sleep(1)
+            print "Main Menu"               # Show we are on main menu
+            print '\nUp    - ObstacleCourse'
+            print 'Down  - StreightLine'
+            print 'Left  - MinimaMaze'
+            print 'Right - Chase the Rainbow'
+            print '1     - Line Follow'
+#            print '2     - xxxxxx'
+            print 'Home  - Exit\n'
+            print "Ready"
+            break
+        # End if
     
 #def MinimuMaze():
 
-#def Golf():
-
-def LineFollowWebCam(showcam):
+def LineFollow(showcam):
 
     global speed               # Allow access to 'speed' constant
     global rightspeed          # Allow access to 'rightspeed' constant
@@ -442,13 +619,209 @@ def LineFollowWebCam(showcam):
             print '\nUp    - ObstacleCourse'
             print 'Down  - StreightLine'
             print 'Left  - MinimaMaze'
-            print 'Right - Golf'
-            print '1     - Line Follow WebCam'
-#            print '2     - Line Follow PiCam'
+            print 'Right - Chase the Rainbow'
+            print '1     - Line Follow'
+#            print '2     - xxxxxx'
             print 'Home  - Exit\n'
             print "Ready"
             break
+            
+def Rainbow(showcam):
 
+    global speed               # Allow access to 'speed' constant
+    global rightspeed          # Allow access to 'rightspeed' constant
+    global leftspeed           # Allow access to 'leftspeed' constant
+    global maxspeed            # Allow access to 'maxspeed' constant
+    global minspeed            # Allow access to 'minspeed' constant
+    global innerturnspeed      # Speed for Inner Wheels in a turn
+    global outerturnspeed      # Speed for Outer Wheels in a turn
+    global wii                 # Allow access to 'Wii' constants
+    global hRes                # Allow Access to Cam Horizontal Resolution
+    global vRes                # Allow Access to Cam Vertical Resolution
+    global video_capture       # Allow Access to WebCam Object
+    global soundvolume         # Allow access to sound volume
+
+    turnspeed = 95
+    
+    print "Checkpoint: Set up WebCam\n"
+	# initialize the camera and grab a reference to the raw camera capture
+    
+    hRes = 320
+    vRes = 240
+    
+    print "default resolution = " + str(video_capture.get(cv2.CAP_PROP_FRAME_WIDTH)) + "x" + str(video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    video_capture.set(cv2.CAP_PROP_FRAME_WIDTH, hRes)
+    video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, vRes)
+
+    print "updated resolution = " + str(video_capture.get(cv2.CAP_PROP_FRAME_WIDTH)) + "x" + str(video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+#    if video_capture.isOpened() == False:                           # check if VideoCapture object was associated to webcam successfully
+#        print "error: video_capture not accessed successfully\n\n"  # if not, print error message to std out
+#        os.system("pause")                                          # pause until user presses a key so user can see error message
+#        wait = input("PRESS ENTER TO CONTINUE.\n\n")
+#        return                                                      # and exit function (which exits program)
+#    # end if
+
+    intXFrameCenter = int(float(video_capture.get(cv2.CAP_PROP_FRAME_WIDTH)) / 2.0)
+    intYFrameCenter = int(float(video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT)) / 2.0)
+   
+    #print intXFrameCenter, intYFrameCenter
+    
+    if intXFrameCenter == 0.0:
+        scrollphat.clear()         # Shutdown Scroll pHat
+        scrollphat.write_string('Err')
+        time.sleep(2)
+        return
+    
+    panServoPosition = intXFrameCenter
+    
+    print'\nPress "A" to Chase the Rainbow'
+    print'Press "Hm" to return to main menu\n'
+        
+    scrollphat.clear()         # Shutdown Scroll pHat
+    scrollphat.write_string('"A"')
+    time.sleep(.25)
+
+    #print "Checkpoint: Enter main Loop\n\n"
+   
+    while True:
+    
+        buttons = wii.state['buttons']          # Get WiiMote Button Pressed
+        
+        if (buttons & cwiid.BTN_A):
+            print 'Start Chasing the Rainbow'
+            scrollphat.clear()         # Shutdown Scroll pHat
+            scrollphat.write_string('CtR')
+            time.sleep(.25)
+ 
+            while True:
+            
+                buttons = wii.state['buttons']          # Get WiiMote Button Pressed
+                
+                if (buttons & cwiid.BTN_HOME):
+                    DalekV2Drive.stop()
+                    print'\nPress "A" to Chase the Rainbow 1 '
+                    print'Press "Hm" to return to main menu\n'
+                    scrollphat.clear()         # Shutdown Scroll pHat
+                    scrollphat.write_string('"A"')
+                    time.sleep(.25)
+                    break
+
+                while video_capture.isOpened():                    # cv2.waitKey(1) != 32 and until the Esc key is pressed or webcam connection is lost
+                    blnFrameReadSuccessfully, imgOriginal = video_capture.read()            # read next frame
+
+                    buttons = wii.state['buttons']          # Get WiiMote Button Pressed
+                    
+                    if (buttons & cwiid.BTN_HOME):
+                        DalekV2Drive.stop()
+                        print'\nPress "A" to Chase the Rainbow 2'
+                        print'Press "Hm" to return to main menu\n'
+                        scrollphat.clear()         # Shutdown Scroll pHat
+                        scrollphat.write_string('"A"')
+                        time.sleep(.25)
+                        break
+                    # end if
+                    
+                    if not blnFrameReadSuccessfully or imgOriginal is None:             # if frame was not read successfully
+                        print "error: frame not read from webcam\n"                     # print error message to std out
+                        #os.system("pause")                                             # pause until user presses a key so user can see error message
+                        break                                                           # exit while loop (which exits program)
+                    # end if
+
+                    #print "Checkpoint: Picture Taken - Starting Analysis"
+		
+                    imgHSV = cv2.cvtColor(imgOriginal, cv2.COLOR_BGR2HSV)
+                    
+                    imgThreshLow = cv2.inRange(imgHSV, np.array([0, 135, 135]), np.array([19, 255, 255]))
+                    imgThreshHigh = cv2.inRange(imgHSV, np.array([168, 135, 135]), np.array([179, 255, 255]))
+                    
+                    imgThresh = cv2.add(imgThreshLow, imgThreshHigh)
+                    
+                    imgThresh = cv2.GaussianBlur(imgThresh, (3, 3), 2)
+
+                    imgThresh = cv2.dilate(imgThresh, np.ones((5,5),np.uint8))
+                    imgThresh = cv2.erode(imgThresh, np.ones((5,5),np.uint8))
+
+                    intRows, intColumns = imgThresh.shape
+
+                    #print "Checkpoint : 2"
+                    
+                    circles = cv2.HoughCircles(imgThresh, cv2.HOUGH_GRADIENT, 3, intRows / 4)      # fill variable circles with all circles in the processed image
+
+                    if circles is not None:                     # this line is necessary to keep program from crashing on next line if no circles were found
+                
+                        sortedCircles = sorted(circles[0], key = itemgetter(2), reverse = True)
+
+                        largestCircle = sortedCircles[0]
+
+                        x, y, radius = largestCircle                                                                       # break out x, y, and radius
+                        print "ball position x = " + str(x) + ", y = " + str(y) + ", radius = " + str(radius)       # print ball position and radius
+
+                        if x < intXFrameCenter and panServoPosition >= 2:
+                            panServoPosition = panServoPosition - 2
+                            print "Turn Right: ", panServoPosition
+                            scrollphat.clear()         # Shutdown Scroll pHat
+                            scrollphat.write_string("TrR")
+                            DalekV2Drive.spinRight(turnspeed)
+                            time.sleep(.25)
+                            DalekV2Drive.stop()
+                        elif x > intXFrameCenter and panServoPosition <= 178:
+                            panServoPosition = panServoPosition + 2
+                            print "Turn Left: ", panServoPosition
+                            scrollphat.clear()         # Shutdown Scroll pHat
+                            scrollphat.write_string("TrL")
+                            DalekV2Drive.spinLeft(turnspeed)
+                            time.sleep(.25)
+                            DalekV2Drive.stop()
+                        # end if else
+                        
+                        if showcam == True:
+                                cv2.circle(imgOriginal, (x, y), 3, (0, 255, 0), -1)           # draw small green circle at center of detected object
+                                cv2.circle(imgOriginal, (x, y), radius, (0, 0, 255), 3)       # draw red circle around the detected object
+                                cv2.imshow("imgOriginal", imgOriginal)                        # show windows
+                                cv2.imshow("imgThresh", imgThresh)
+                        # end if
+                    else:
+                        panServoPosition = panServoPosition - 2
+                        print "Turn Right: ", panServoPosition
+                        scrollphat.clear()         # Shutdown Scroll pHat
+                        scrollphat.write_string("TrR")
+                        DalekV2Drive.spinRight(turnspeed)
+                        time.sleep(.25)
+                        DalekV2Drive.stop()
+                        if showcam == True:
+                            cv2.imshow("imgOriginal", imgOriginal)                        # show windows
+                            cv2.imshow("imgThresh", imgThresh)
+                        # end if
+                    # end if
+                    
+                    #if showcam == True:
+                    #    cv2.imshow("imgOriginal", imgOriginal)                        # show windows
+                    #    cv2.imshow("imgThresh", imgThresh)
+                    # end if
+                    
+                # end while 
+            # end while
+            #cv2.destroyAllWindows()
+
+    
+        elif (buttons & cwiid.BTN_HOME):
+            DalekV2Drive.stop()
+            scrollphat.clear()         # Shutdown Scroll pHat
+            scrollphat.write_string("Hm")
+            print "\n\nReturning to Main Menu\n\n"
+            time.sleep(1)
+            print "Main Menu"               # Show we are on main menu
+            print '\nUp    - ObstacleCourse'
+            print 'Down  - StreightLine'
+            print 'Left  - MinimaMaze'
+            print 'Right - Chase the Rainbow'
+            print '1     - Line Follow'
+#            print '2     - xxxxxx'
+            print 'Home  - Exit\n'
+            print "Ready"
+            break
             
 # End of Task Procedures  
 #======================================================================    
@@ -468,9 +841,9 @@ def maincontrol(showcam):                  # Main Control Loop
     print '\nUp    - ObstacleCourse'
     print 'Down  - StreightLine'
     print 'Left  - MinimaMaze'
-    print 'Right - Golf'
-    print '1     - Line Follow WebCam'
-#    print '2     - Line Follow PiCam'
+    print 'Right - Chase the Rainbow'
+    print '1     - Line Follow'
+#    print '2     - xxxxxx'
     print 'Home  - Exit\n'
     
     wii.rpt_mode = cwiid.RPT_BTN
@@ -504,7 +877,7 @@ def maincontrol(showcam):                  # Main Control Loop
             volumesetting = '"--volume=' + str(soundvolume) +'"'
             subprocess.Popen(["mplayer",volumesetting, "Sound/Stay.mp3"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             time.sleep(1)
-            #StreightLine()
+            StreightLine()
         elif (buttons & cwiid.BTN_LEFT):
             print 'MinimalMaze'
             scrollphat.clear()         # Clear Scroll pHat
@@ -514,20 +887,20 @@ def maincontrol(showcam):                  # Main Control Loop
             time.sleep(1)
             #MinimalMaze()
         elif (buttons & cwiid.BTN_RIGHT):
-            print 'Golf'
+            print 'Chase the Rainbow'
             scrollphat.clear()         # Clear Scroll pHat
-            scrollphat.write_string("Golf")
+            scrollphat.write_string("CtR")
             time.sleep(1)
-            #ObstacleCourse()
+            Rainbow(showcam)
         elif (buttons & cwiid.BTN_1):
-            print 'Line Follow WebCam'
+            print 'Line Follow'
             scrollphat.clear()         # Clear Scroll pHat
             scrollphat.write_string("LiF")
             volumesetting = '"--volume=' + str(soundvolume) +'"'
             subprocess.Popen(["mplayer",volumesetting, "Sound/IntruderLocated.mp3"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            LineFollowWebCam(showcam)
+            LineFollow(showcam)
 #        elif (buttons & cwiid.BTN_2):
-#            print 'Line Follow PiCam'
+#            print 'xxxxxx'
 #            scrollphat.clear()         # Clear Scroll pHat
 #            scrollphat.write_string("LiF")
 #            LineFollowPiCam(showcam)
@@ -601,7 +974,6 @@ if __name__ == '__main__': # The Program will start from here
         soundvolume = args.SoundVolume
     else:
         soundvolume = 100
-        print '\nSound Volume - ',soundvolume
         
     print '\n\nSetting Up ...\n'
     scrollphat.clear()         # Clear Scroll pHat
