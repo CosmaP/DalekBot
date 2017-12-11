@@ -757,21 +757,25 @@ def Rainbow(showcam):
 
                         x, y, radius = largestCircle                                                                       # break out x, y, and radius
                         print "ball position x = " + str(x) + ", y = " + str(y) + ", radius = " + str(radius)       # print ball position and radius
+			
+                        scrollphat.clear()
+                        scrollphat.write_string("Red")
+                        DalekV2Drive.forward(speed)
 
                         if x < intXFrameCenter and panServoPosition >= 2:
                             panServoPosition = panServoPosition - 2
-                            print "Turn Right: ", panServoPosition
-                            scrollphat.clear()         # Shutdown Scroll pHat
-                            scrollphat.write_string("TrR")
-                            DalekV2Drive.spinRight(turnspeed)
-                            time.sleep(.25)
-                            DalekV2Drive.stop()
-                        elif x > intXFrameCenter and panServoPosition <= 178:
-                            panServoPosition = panServoPosition + 2
                             print "Turn Left: ", panServoPosition
                             scrollphat.clear()         # Shutdown Scroll pHat
                             scrollphat.write_string("TrL")
                             DalekV2Drive.spinLeft(turnspeed)
+                            time.sleep(.25)
+                            DalekV2Drive.stop()
+                        elif x > intXFrameCenter and panServoPosition <= 178:
+                            panServoPosition = panServoPosition + 2
+                            print "Turn Right: ", panServoPosition
+                            scrollphat.clear()         # Shutdown Scroll pHat
+                            scrollphat.write_string("TrR")
+                            DalekV2Drive.spinRight(turnspeed)
                             time.sleep(.25)
                             DalekV2Drive.stop()
                         # end if else
@@ -796,10 +800,10 @@ def Rainbow(showcam):
                         # end if
                     # end if
                     
-                    #if showcam == True:
-                    #    cv2.imshow("imgOriginal", imgOriginal)                        # show windows
-                    #    cv2.imshow("imgThresh", imgThresh)
-                    # end if
+#                    	if showcam == True:
+#                        	cv2.imshow("imgOriginal", imgOriginal)                        # show windows
+#                        	cv2.imshow("imgThresh", imgThresh)
+#                     	end if
                     
                 # end while 
             # end while
