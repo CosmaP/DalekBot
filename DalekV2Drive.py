@@ -4,21 +4,21 @@ import RPi.GPIO as GPIO # Import the GPIO Library
 
 # Set variables for the GPIO motor pins
 # print '\n\nSet variables for the GPIO motor pins'
-pinMotorFRSpeed=11
-pinMotorFRForwards=15
-pinMotorFRBackwards=13
+pinMotorFRSpeed=33
+pinMotorFRForwards=35
+pinMotorFRBackwards=37
 
-pinMotorFLSpeed=22
-pinMotorFLForwards=26
-pinMotorFLBackwards=24
+pinMotorFLSpeed=36
+pinMotorFLForwards=38
+pinMotorFLBackwards=40
 
-pinMotorBRSpeed = 8
-pinMotorBRForwards = 10
-pinMotorBRBackwards = 12
+pinMotorBRSpeed = 11
+pinMotorBRForwards = 13
+pinMotorBRBackwards = 15
 
-pinMotorBLSpeed = 19
-pinMotorBLForwards = 23
-pinMotorBLBackwards = 21
+pinMotorBLSpeed = 8
+pinMotorBLForwards = 10
+pinMotorBLBackwards = 12
 
 #======================================================================
 # General Functions
