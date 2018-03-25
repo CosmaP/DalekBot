@@ -95,16 +95,16 @@ def setup():                   # Setup GPIO and Initalise Imports
     video_capture.set(3, hRes)
     video_capture.set(4, vRes)
 
-    print '\nPress some buttons!\n'                                     # Give instructions for connecting Wiimote
-    print 'Press PLUS and MINUS together to disconnect and quit.\n'     # Give instructions for connecting Wiimote
+    print ('\nPress some buttons!\n')                                     # Give instructions for connecting Wiimote
+    print ('Press PLUS and MINUS together to disconnect and quit.\n')     # Give instructions for connecting Wiimote
     
 #======================================================================
   
 def setupwii():
     # Connect Wiimote
-    print '\nPress & hold 1 + 2 on your Wii Remote now ...\n\n'
+    print ('\nPress & hold 1 + 2 on your Wii Remote now ...\n\n')
     scrollphat.clear()         # Shutdown Scroll pHat
-    scrollphat.write_string("1+2")
+    scrollphat.write_string('1+2')
 
     # Connect to the Wii Remote. If it times out then quit.
     
@@ -113,13 +113,13 @@ def setupwii():
     try:
         wii=cwiid.Wiimote()
     except RuntimeError:
-        print 'Error opening wiimote connection'
+        print ('Error opening wiimote connection')
         scrollphat.clear()         # Shutdown Scroll pHat
-        scrollphat.write_string("Err")
+        scrollphat.write_string('Err')
         time.sleep(0.5)
         return False
 
-    print 'Wii Remote connected...\n'
+    print ('Wii Remote connected...\n')
     wii.rumble = 1
     time.sleep(0.1)
     wii.rumble = 0
@@ -148,10 +148,10 @@ def setupwii():
     wii.rumble = 0
     
     scrollphat.clear()         # Shutdown Scroll pHat
-    scrollphat.write_string("Gd")
+    scrollphat.write_string('Gd')
 
-    print '\nPress some buttons!\n'
-    print 'Press PLUS and MINUS together to disconnect and quit.\n'
+    print ('\nPress some buttons!\n')
+    print ('Press PLUS and MINUS together to disconnect and quit.\n')
     
     return True
   
@@ -163,7 +163,7 @@ def setupwii():
    
 def getdistance(distance, TRIG, ECHO):
     GPIO.output(TRIG, False)
-    #print "Waiting For Sensor To Settle"
+    #print 'Waiting For Sensor To Settle'
     time.sleep(0.05)
     pulse_start = 0
     pulse_end = 0
@@ -183,7 +183,7 @@ def getdistance(distance, TRIG, ECHO):
     pulse_duration = pulse_end - pulse_start
     distance = pulse_duration * 17150
     distance = round(distance, 2)
-    #print "Distance:",distance,"cm"
+    #print 'Distance:',distance,'cm'
     return distance
 
 #======================================================================
@@ -230,9 +230,9 @@ def destroy():                 # Shutdown GPIO and Cleanup modules
 
     global soundvolume         # Allow access to sound volume
         
-    print "\n... Shutting Down...\n"
+    print ('\n... Shutting Down...\n')
     scrollphat.clear()         # Shutdown Scroll pHat
-    scrollphat.write_string("Ext")
+    scrollphat.write_string('Ext')
     DalekV2Drive.stop()        # Make sure Bot is not moving when program exits
     DalekV2Drive.cleanup()     # Shutdown all motor control
     global wii                 # Allow access to the wii object
@@ -241,7 +241,7 @@ def destroy():                 # Shutdown GPIO and Cleanup modules
     wii.rumble = 0
     cv2.destroyAllWindows()    # Shutdown any open windows
     volumesetting = '"--volume=' + str(soundvolume) +'"'
-    subprocess.Popen(["mplayer",volumesetting, "Sound/Grow_stronger.mp3"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    subprocess.Popen(['mplayer',volumesetting, 'Sound/Grow_stronger.mp3'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     time.sleep(7)
     scrollphat.clear()         # Clear Scroll pHat
     GPIO.cleanup()             # Release GPIO resource
@@ -279,14 +279,14 @@ def ObstacleCourse():
         if (buttons - cwiid.BTN_PLUS - cwiid.BTN_MINUS == 0):  
            break  
 
-        print speed
+        print (speed)
         scrollphat.clear()         # Shutdown Scroll pHat
         scrollphat.write_string(str(speed))
         
         if boost == 0 and (buttons & cwiid.BTN_B):
-            print 'Boost', maxspeed
+            print ('Boost', maxspeed)
             scrollphat.clear()         # Shutdown Scroll pHat
-            scrollphat.write_string("Max")
+            scrollphat.write_string('Max')
             savespeed = speed
             speed = maxspeed
             boost = 1
@@ -294,82 +294,82 @@ def ObstacleCourse():
         elif boost == 1 and (buttons & cwiid.BTN_B):
             speed = savespeed
             boost = 0
-            print 'Normal', speed
+            print ('Normal', speed)
             scrollphat.clear()         # Shutdown Scroll pHat
-            scrollphat.write_string("Nor")
+            scrollphat.write_string('Nor')
             time.sleep(.25)
         
         if (buttons & cwiid.BTN_UP):
-            print 'Forward', speed
+            print ('Forward', speed)
             scrollphat.clear()         # Shutdown Scroll pHat
-            scrollphat.write_string("Fw")
+            scrollphat.write_string('Fw')
             DalekV2Drive.forward(speed)
             time.sleep(.25)
         elif (buttons & cwiid.BTN_DOWN):
-            print 'Backward', speed
+            print ('Backward', speed)
             scrollphat.clear()         # Shutdown Scroll pHat
-            scrollphat.write_string("Bw")
+            scrollphat.write_string('Bw')
             DalekV2Drive.backward(speed)
             time.sleep(.25)
         elif (buttons & cwiid.BTN_LEFT):
-            print 'Spin Left', speed
+            print ('Spin Left', speed)
             scrollphat.clear()         # Shutdown Scroll pHat
-            scrollphat.write_string("SL")
+            scrollphat.write_string('SL')
             DalekV2Drive.spinLeft(maxspeed)
             time.sleep(.25)
         elif (buttons & cwiid.BTN_RIGHT):
-            print 'Spin Right', speed
+            print ('Spin Right', speed)
             scrollphat.clear()         # Shutdown Scroll pHat
-            scrollphat.write_string("SR")
+            scrollphat.write_string('SR')
             DalekV2Drive.spinRight(maxspeed)
             time.sleep(.25)
         elif (buttons & cwiid.BTN_1):
-            print 'Turn Right'
+            print ('Turn Right')
             scrollphat.clear()         # Shutdown Scroll pHat
-            scrollphat.write_string("TrR")
+            scrollphat.write_string('TrR')
             DalekV2Drive.turnForwardRight(outerturnspeed, innerturnspeed)
             time.sleep(.25)
         elif (buttons & cwiid.BTN_2):
-            print 'Turn Left'
+            print ('Turn Left')
             scrollphat.clear()         # Shutdown Scroll pHat
-            scrollphat.write_string("TrL")
+            scrollphat.write_string('TrL')
             DalekV2Drive.turnForwardLeft(innerturnspeed, outerturnspeed)
             time.sleep(.25)
         elif (buttons & cwiid.BTN_PLUS):
-            print 'Speed Up 1'
+            print ('Speed Up 1')
             scrollphat.clear()         # Shutdown Scroll pHat
-            scrollphat.write_string("+1")
+            scrollphat.write_string('+1')
             if speed < 100:
                 speed = speed + 1
                 time.sleep(0.5)
         elif (buttons & cwiid.BTN_MINUS):
-            print 'Speed Down 1'
+            print ('Speed Down 1')
             scrollphat.clear()         # Shutdown Scroll pHat
-            scrollphat.write_string("-1")
+            scrollphat.write_string('-1')
             if speed > 0:
                 speed = speed - 1
                 time.sleep(0.5)
         elif (buttons & cwiid.BTN_A):
-            print 'Stop'
+            print ('Stop')
             scrollphat.clear()         # Shutdown Scroll pHat
-            scrollphat.write_string("Stp")
+            scrollphat.write_string('Stp')
             DalekV2Drive.stop()
             time.sleep(.25)
         elif (buttons & cwiid.BTN_HOME):
             DalekV2Drive.stop()
             scrollphat.clear()         # Shutdown Scroll pHat
             scrollphat.write_string("Hm")
-            print "\n\nReturning to Main Menu\n\n"
+            print ('\n\nReturning to Main Menu\n\n')
             time.sleep(1)
-            print "Main Menu"               # Show we are on main menu
-            print '\nUp    - ObstacleCourse'
-            print 'Down  - StreightLine'
-            print 'Left  - MinimaMaze'
-            print 'Right - Chase the Rainbow'
-            print '1     - Line Follow'
-#            print '2     - xxxxxx'
-            print 'Home  - Exit\n'
-            print "Ready"
+            print ('Main Menu')               # Show we are on main menu
+            print ('\nUp    - ObstacleCourse')
+            print ('Down  - StreightLine')
+            print ('Left  - MinimaMaze')
+            print ('Right - Chase the Rainbow')
+            print ('1     - Line Follow')
+#            print ('2     - xxxxxx')
+            print ('Home  - Exit\n')
+            print ('Ready')
             break
     
 def StreightLine():
@@ -394,11 +394,11 @@ def StreightLine():
     centerdistance = 0         # Prime Center distance variable
     rightdistance = 0          # Prime Right distance variable
     
-    print'\nPress "A" to start Streight Line run'
-    print'Press "Hm" to return to main menu\n'
+    print ('\nPress "A" to start Streight Line run')
+    print ('Press "Hm" to return to main menu\n')
         
     scrollphat.clear()         # Shutdown Scroll pHat
-    scrollphat.write_string('"A"')
+    scrollphat.write_string("'A'")
     time.sleep(.25)
 
     while True:
@@ -406,7 +406,7 @@ def StreightLine():
         buttons = wii.state['buttons']          # Get WiiMote Button Pressed
 
         if (buttons & cwiid.BTN_A):
-            print 'Start Streight Line run'
+            print ('Start Streight Line run')
             scrollphat.clear()         # Shutdown Scroll pHat
             scrollphat.write_string('SLR')
             time.sleep(.25)
@@ -419,8 +419,8 @@ def StreightLine():
                 # Choose which task to do
                 if (buttons & cwiid.BTN_HOME):
                     DalekV2Drive.stop()
-                    print'\nPress "A" to start Streight Line run'
-                    print'Press "Hm" to return to main menu\n'
+                    print ('\nPress "A" to start Streight Line run')
+                    print ('Press "Hm" to return to main menu\n')
                     scrollphat.clear()         # Shutdown Scroll pHat
                     scrollphat.write_string('"A"')
                     time.sleep(.25)
@@ -432,13 +432,13 @@ def StreightLine():
                 rightdistance = getdistance(rightdistance, TrigPinRight, EchoPinRight)
                 
                 scrollphat.write_string(str(leftdistance))
-                print 'Left Distance :', leftdistance, 'Center Distance :', centerdistance, 'Right Distance :', rightdistance
+                print ('Left Distance :', leftdistance, 'Center Distance :', centerdistance, 'Right Distance :', rightdistance)
                 
                 if centerdistance <= 2:
                     DalekV2Drive.stop()
-                    print '\nCenter Distance :', centerdistance, 'Run Finished\n\n'
-                    print'\nPress "A" to start Streight Line run'
-                    print'Press "Hm" to return to main menu\n'
+                    print ('\nCenter Distance :', centerdistance, 'Run Finished\n\n')
+                    print ('\nPress "A" to start Streight Line run')
+                    print ('Press "Hm" to return to main menu\n')
                     scrollphat.clear()         # Shutdown Scroll pHat
                     scrollphat.write_string('"A"')
                     time.sleep(.25)
@@ -467,17 +467,17 @@ def StreightLine():
             DalekV2Drive.stop()
             scrollphat.clear()         # Shutdown Scroll pHat
             scrollphat.write_string("Hm")
-            print "\n\nReturning to Main Menu\n\n"
+            print ('\n\nReturning to Main Menu\n\n')
             time.sleep(1)
-            print "Main Menu"               # Show we are on main menu
-            print '\nUp    - ObstacleCourse'
-            print 'Down  - StreightLine'
-            print 'Left  - MinimaMaze'
-            print 'Right - Chase the Rainbow'
-            print '1     - Line Follow'
-#            print '2     - xxxxxx'
-            print 'Home  - Exit\n'
-            print "Ready"
+            print ('Main Menu')               # Show we are on main menu
+            print ('\nUp    - ObstacleCourse')
+            print ('Down  - StreightLine')
+            print ('Left  - MinimaMaze')
+            print ('Right - Chase the Rainbow')
+            print ('1     - Line Follow')
+#            print ('2     - xxxxxx')
+            print ('Home  - Exit\n')
+            print ('Ready')
             break
         # End if
     
@@ -502,8 +502,8 @@ def LineFollow(showcam):
     turnspeed = 95
     speed = 30
     
-    print'\nPress "A" to start Line following'
-    print'Press "Hm" to return to main menu\n'
+    print ('\nPress "A" to start Line following')
+    print ('Press "Hm" to return to main menu\n')
         
     scrollphat.clear()         # Shutdown Scroll pHat
     scrollphat.write_string('"A"')
@@ -514,7 +514,7 @@ def LineFollow(showcam):
         buttons = wii.state['buttons']          # Get WiiMote Button Pressed
 
         if (buttons & cwiid.BTN_A):
-            print 'Start Line Following'
+            print ('Start Line Following')
             scrollphat.clear()         # Shutdown Scroll pHat
             scrollphat.write_string('LiF')
             time.sleep(.25)
@@ -526,8 +526,8 @@ def LineFollow(showcam):
                 # Choose which task to do
                 if (buttons & cwiid.BTN_HOME):
                     DalekV2Drive.stop()
-                    print'\nPress "A" to start Line following'
-                    print'Press "Hm" to return to main menu\n'
+                    print ('\nPress "A" to start Line following')
+                    print ('Press "Hm" to return to main menu\n')
                     scrollphat.clear()         # Shutdown Scroll pHat
                     scrollphat.write_string('"A"')
                     time.sleep(.25)
@@ -581,25 +581,25 @@ def LineFollow(showcam):
                 if cx >= 370:
                     RSteer = cx - 370
                     SteerRight = remap(RSteer, 0, 45, 1, 270)
-                    print "Turn Right: ", SteerRight, cx
+                    print ('Turn Right: ', SteerRight, cx)
                     scrollphat.clear()         # Shutdown Scroll pHat
-                    scrollphat.write_string("TrR")
+                    scrollphat.write_string('TrR')
                     DalekV2Drive.spinRight(turnspeed)
 
                 # --------- On Track Routine ----------
                 if cx < 370 and cx > 270:
-                    print "On Track", cx
+                    print ('On Track', cx)
                     scrollphat.clear()         # Shutdown Scroll pHat
-                    scrollphat.write_string("Fw")
+                    scrollphat.write_string('Fw')
                     DalekV2Drive.forward(speed)
 
                 # --------- Steer Left Routine ----------
                 if cx <= 270:
                     LSteer = 270 - cx
                     SteerLeft = remap(LSteer, 0, 45, 1, 270)
-                    print "Turn Left: ", SteerLeft, cx
+                    print ('Turn Left: ', SteerLeft, cx)
                     scrollphat.clear()         # Shutdown Scroll pHat
-                    scrollphat.write_string("TrL")
+                    scrollphat.write_string('TrL')
                     DalekV2Drive.spinLeft(turnspeed)
  
                 # ------ Show the resulting cropped image
@@ -613,17 +613,17 @@ def LineFollow(showcam):
             DalekV2Drive.stop()
             scrollphat.clear()         # Shutdown Scroll pHat
             scrollphat.write_string("Hm")
-            print "\n\nReturning to Main Menu\n\n"
+            print ('\n\nReturning to Main Menu\n\n')
             time.sleep(1)
-            print "Main Menu"               # Show we are on main menu
-            print '\nUp    - ObstacleCourse'
-            print 'Down  - StreightLine'
-            print 'Left  - MinimaMaze'
-            print 'Right - Chase the Rainbow'
-            print '1     - Line Follow'
-#            print '2     - xxxxxx'
-            print 'Home  - Exit\n'
-            print "Ready"
+            print ('Main Menu')               # Show we are on main menu
+            print ('\nUp    - ObstacleCourse')
+            print ('Down  - StreightLine')
+            print ('Left  - MinimaMaze')
+            print ('Right - Chase the Rainbow')
+            print ('1     - Line Follow')
+#            print ('2     - xxxxxx')
+            print ('Home  - Exit\n')
+            print ('Ready')
             break
             
 def Rainbow(showcam):
@@ -643,23 +643,23 @@ def Rainbow(showcam):
 
     turnspeed = 95
     
-    print "Checkpoint: Set up WebCam\n"
+    print ('Checkpoint: Set up WebCam\n')
 	# initialize the camera and grab a reference to the raw camera capture
     
     hRes = 320
     vRes = 240
     
-    print "default resolution = " + str(video_capture.get(cv2.CAP_PROP_FRAME_WIDTH)) + "x" + str(video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    print ('default resolution = ' + str(video_capture.get(cv2.CAP_PROP_FRAME_WIDTH)) + 'x' + str(video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT)))
 
     video_capture.set(cv2.CAP_PROP_FRAME_WIDTH, hRes)
     video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, vRes)
 
-    print "updated resolution = " + str(video_capture.get(cv2.CAP_PROP_FRAME_WIDTH)) + "x" + str(video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    print ('updated resolution = ' + str(video_capture.get(cv2.CAP_PROP_FRAME_WIDTH)) + 'x' + str(video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT)))
 
 #    if video_capture.isOpened() == False:                           # check if VideoCapture object was associated to webcam successfully
-#        print "error: video_capture not accessed successfully\n\n"  # if not, print error message to std out
-#        os.system("pause")                                          # pause until user presses a key so user can see error message
-#        wait = input("PRESS ENTER TO CONTINUE.\n\n")
+#        print 'error: video_capture not accessed successfully\n\n'  # if not, print error message to std out
+#        os.system('pause')                                          # pause until user presses a key so user can see error message
+#        wait = input('PRESS ENTER TO CONTINUE.\n\n')
 #        return                                                      # and exit function (which exits program)
 #    # end if
 
@@ -676,21 +676,21 @@ def Rainbow(showcam):
     
     panServoPosition = intXFrameCenter
     
-    print'\nPress "A" to Chase the Rainbow'
-    print'Press "Hm" to return to main menu\n'
+    print ('\nPress "A" to Chase the Rainbow')
+    print ('Press "Hm" to return to main menu\n')
         
     scrollphat.clear()         # Shutdown Scroll pHat
     scrollphat.write_string('"A"')
     time.sleep(.25)
 
-    #print "Checkpoint: Enter main Loop\n\n"
+    #print 'Checkpoint: Enter main Loop\n\n'
    
     while True:
     
         buttons = wii.state['buttons']          # Get WiiMote Button Pressed
         
         if (buttons & cwiid.BTN_A):
-            print 'Start Chasing the Rainbow'
+            print ('Start Chasing the Rainbow')
             scrollphat.clear()         # Shutdown Scroll pHat
             scrollphat.write_string('CtR')
             time.sleep(.25)
@@ -701,8 +701,8 @@ def Rainbow(showcam):
                 
                 if (buttons & cwiid.BTN_HOME):
                     DalekV2Drive.stop()
-                    print'\nPress "A" to Chase the Rainbow 1 '
-                    print'Press "Hm" to return to main menu\n'
+                    print ('\nPress "A" to Chase the Rainbow 1 ')
+                    print ('Press "Hm" to return to main menu\n')
                     scrollphat.clear()         # Shutdown Scroll pHat
                     scrollphat.write_string('"A"')
                     time.sleep(.25)
@@ -715,8 +715,8 @@ def Rainbow(showcam):
                     
                     if (buttons & cwiid.BTN_HOME):
                         DalekV2Drive.stop()
-                        print'\nPress "A" to Chase the Rainbow 2'
-                        print'Press "Hm" to return to main menu\n'
+                        print ('\nPress "A" to Chase the Rainbow 2')
+                        print ('Press "Hm" to return to main menu\n')
                         scrollphat.clear()         # Shutdown Scroll pHat
                         scrollphat.write_string('"A"')
                         time.sleep(.25)
@@ -724,12 +724,12 @@ def Rainbow(showcam):
                     # end if
                     
                     if not blnFrameReadSuccessfully or imgOriginal is None:             # if frame was not read successfully
-                        print "error: frame not read from webcam\n"                     # print error message to std out
-                        #os.system("pause")                                             # pause until user presses a key so user can see error message
+                        print ('error: frame not read from webcam\n')                     # print error message to std out
+                        #os.system('pause')                                             # pause until user presses a key so user can see error message
                         break                                                           # exit while loop (which exits program)
                     # end if
 
-                    #print "Checkpoint: Picture Taken - Starting Analysis"
+                    #print ('Checkpoint: Picture Taken - Starting Analysis')
 		
                     imgHSV = cv2.cvtColor(imgOriginal, cv2.COLOR_BGR2HSV)
                     
@@ -745,7 +745,7 @@ def Rainbow(showcam):
 
                     intRows, intColumns = imgThresh.shape
 
-                    #print "Checkpoint : 2"
+                    #print ('Checkpoint : 2')
                     
                     circles = cv2.HoughCircles(imgThresh, cv2.HOUGH_GRADIENT, 3, intRows / 4)      # fill variable circles with all circles in the processed image
 
@@ -756,25 +756,25 @@ def Rainbow(showcam):
                         largestCircle = sortedCircles[0]
 
                         x, y, radius = largestCircle                                                                       # break out x, y, and radius
-                        print "ball position x = " + str(x) + ", y = " + str(y) + ", radius = " + str(radius)       # print ball position and radius
+                        print ('ball position x = ' + str(x) + ', y = ' + str(y) + ', radius = ' + str(radius))       # print ball position and radius
 			
                         scrollphat.clear()
-                        scrollphat.write_string("Red")
+                        scrollphat.write_string('Red')
                         DalekV2Drive.forward(speed)
 
                         if x < intXFrameCenter and panServoPosition >= 2:
                             panServoPosition = panServoPosition - 2
-                            print "Turn Left: ", panServoPosition
+                            print ('Turn Left: ', panServoPosition)
                             scrollphat.clear()         # Shutdown Scroll pHat
-                            scrollphat.write_string("TrL")
+                            scrollphat.write_string('TrL')
                             DalekV2Drive.spinLeft(turnspeed)
                             time.sleep(.25)
                             DalekV2Drive.stop()
                         elif x > intXFrameCenter and panServoPosition <= 178:
                             panServoPosition = panServoPosition + 2
-                            print "Turn Right: ", panServoPosition
+                            print ('Turn Right: ', panServoPosition)
                             scrollphat.clear()         # Shutdown Scroll pHat
-                            scrollphat.write_string("TrR")
+                            scrollphat.write_string('TrR')
                             DalekV2Drive.spinRight(turnspeed)
                             time.sleep(.25)
                             DalekV2Drive.stop()
@@ -783,26 +783,26 @@ def Rainbow(showcam):
                         if showcam == True:
                                 cv2.circle(imgOriginal, (x, y), 3, (0, 255, 0), -1)           # draw small green circle at center of detected object
                                 cv2.circle(imgOriginal, (x, y), radius, (0, 0, 255), 3)       # draw red circle around the detected object
-                                cv2.imshow("imgOriginal", imgOriginal)                        # show windows
-                                cv2.imshow("imgThresh", imgThresh)
+                                cv2.imshow('imgOriginal', imgOriginal)                        # show windows
+                                cv2.imshow('imgThresh', imgThresh)
                         # end if
                     else:
                         panServoPosition = panServoPosition - 2
-                        print "Turn Right: ", panServoPosition
+                        print ('Turn Right: ', panServoPosition)
                         scrollphat.clear()         # Shutdown Scroll pHat
-                        scrollphat.write_string("TrR")
+                        scrollphat.write_string('TrR')
                         DalekV2Drive.spinRight(turnspeed)
                         time.sleep(.25)
                         DalekV2Drive.stop()
                         if showcam == True:
-                            cv2.imshow("imgOriginal", imgOriginal)                        # show windows
-                            cv2.imshow("imgThresh", imgThresh)
+                            cv2.imshow('imgOriginal', imgOriginal)                        # show windows
+                            cv2.imshow('imgThresh', imgThresh)
                         # end if
                     # end if
                     
 #                    	if showcam == True:
-#                        	cv2.imshow("imgOriginal", imgOriginal)                        # show windows
-#                        	cv2.imshow("imgThresh", imgThresh)
+#                        	cv2.imshow('imgOriginal', imgOriginal)                        # show windows
+#                        	cv2.imshow('imgThresh', imgThresh)
 #                     	end if
                     
                 # end while 
@@ -814,17 +814,17 @@ def Rainbow(showcam):
             DalekV2Drive.stop()
             scrollphat.clear()         # Shutdown Scroll pHat
             scrollphat.write_string("Hm")
-            print "\n\nReturning to Main Menu\n\n"
+            print ('\n\nReturning to Main Menu\n\n')
             time.sleep(1)
-            print "Main Menu"               # Show we are on main menu
-            print '\nUp    - ObstacleCourse'
-            print 'Down  - StreightLine'
-            print 'Left  - MinimaMaze'
-            print 'Right - Chase the Rainbow'
-            print '1     - Line Follow'
-#            print '2     - xxxxxx'
-            print 'Home  - Exit\n'
-            print "Ready"
+            print ('Main Menu')               # Show we are on main menu
+            print ('\nUp    - ObstacleCourse')
+            print ('Down  - StreightLine')
+            print ('Left  - MinimaMaze')
+            print ('Right - Chase the Rainbow')
+            print ('1     - Line Follow')
+#            print ('2     - xxxxxx')
+            print ('Home  - Exit\n')
+            print ('Ready')
             break
             
 # End of Task Procedures  
@@ -839,25 +839,25 @@ def maincontrol(showcam):                  # Main Control Loop
     global soundvolume              # Allow access to sound volume
 
     scrollphat.clear()              # Clear Scroll pHat
-    scrollphat.write_string("Mn")   # Show we are on main menu
-    print "Main Menu"               # Show we are on main menu
+    scrollphat.write_string('Mn')   # Show we are on main menu
+    print ('Main Menu')               # Show we are on main menu
 
-    print '\nUp    - ObstacleCourse'
-    print 'Down  - StreightLine'
-    print 'Left  - MinimaMaze'
-    print 'Right - Chase the Rainbow'
-    print '1     - Line Follow'
-#    print '2     - xxxxxx'
-    print 'Home  - Exit\n'
+    print ('\nUp    - ObstacleCourse')
+    print ('Down  - StreightLine')
+    print ('Left  - MinimaMaze')
+    print ('Right - Chase the Rainbow')
+    print ('1     - Line Follow')
+#    print ('2     - xxxxxx')
+    print ('Home  - Exit\n')
     
     wii.rpt_mode = cwiid.RPT_BTN
 
-    print "Ready"
+    print ('Ready')
     
     while True:
     
         scrollphat.clear()              # Clear Scroll pHat
-        scrollphat.write_string("Mn")   # Show we are on main menu
+        scrollphat.write_string('Mn')   # Show we are on main menu
 
         buttons = wii.state['buttons']          # Get WiiMote Button Pressed
         # Choose which task to do
@@ -868,56 +868,56 @@ def maincontrol(showcam):                  # Main Control Loop
             break  
  
         if (buttons & cwiid.BTN_UP):
-            print 'ObstacleCourse'
+            print ('ObstacleCourse')
             scrollphat.clear()         # Clear Scroll pHat
-            scrollphat.write_string("OC")
+            scrollphat.write_string('OC')
             volumesetting = '"--volume=' + str(soundvolume) +'"'
-            subprocess.Popen(["mplayer",volumesetting, "Sound/Rant.mp3"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.Popen(['mplayer',volumesetting, 'Sound/Rant.mp3'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             ObstacleCourse()
         elif (buttons & cwiid.BTN_DOWN):
-            print 'StreightLine'
+            print ('StreightLine')
             scrollphat.clear()         # Clear Scroll pHat
-            scrollphat.write_string("StL")
+            scrollphat.write_string('StL')
             volumesetting = '"--volume=' + str(soundvolume) +'"'
-            subprocess.Popen(["mplayer",volumesetting, "Sound/Stay.mp3"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.Popen(['mplayer',volumesetting, 'Sound/Stay.mp3'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             time.sleep(1)
             StreightLine()
         elif (buttons & cwiid.BTN_LEFT):
-            print 'MinimalMaze'
+            print ('MinimalMaze')
             scrollphat.clear()         # Clear Scroll pHat
-            scrollphat.write_string("MM")
+            scrollphat.write_string('MM')
             volumesetting = '"--volume=' + str(soundvolume) +'"'
-            subprocess.Popen(["mplayer",volumesetting, "Sound/IntruderLocated.mp3"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.Popen(['mplayer',volumesetting, 'Sound/IntruderLocated.mp3'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             time.sleep(1)
             #MinimalMaze()
         elif (buttons & cwiid.BTN_RIGHT):
-            print 'Chase the Rainbow'
+            print ('Chase the Rainbow')
             scrollphat.clear()         # Clear Scroll pHat
-            scrollphat.write_string("CtR")
+            scrollphat.write_string('CtR')
             time.sleep(1)
             Rainbow(showcam)
         elif (buttons & cwiid.BTN_1):
-            print 'Line Follow'
+            print ('Line Follow')
             scrollphat.clear()         # Clear Scroll pHat
-            scrollphat.write_string("LiF")
+            scrollphat.write_string('LiF')
             volumesetting = '"--volume=' + str(soundvolume) +'"'
-            subprocess.Popen(["mplayer",volumesetting, "Sound/IntruderLocated.mp3"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.Popen(['mplayer',volumesetting, 'Sound/IntruderLocated.mp3'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             LineFollow(showcam)
 #        elif (buttons & cwiid.BTN_2):
-#            print 'xxxxxx'
+#            print ('xxxxxx')
 #            scrollphat.clear()         # Clear Scroll pHat
-#            scrollphat.write_string("LiF")
+#            scrollphat.write_string('LiF')
 #            LineFollowPiCam(showcam)
         elif (buttons & cwiid.BTN_PLUS):
-            print '+'
+            print ('+')
             scrollphat.clear()         # Clear Scroll pHat
-            scrollphat.write_string("+")
+            scrollphat.write_string('+')
             volumesetting = '"--volume=' + str(soundvolume) +'"'
-            subprocess.Popen(["mplayer",volumesetting, "Sound/exterminate.mp3"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.Popen(['mplayer',volumesetting, 'Sound/exterminate.mp3'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         elif (buttons & cwiid.BTN_MINUS):
-            print '-'
+            print ('-')
             scrollphat.clear()         # Clear Scroll pHat
-            scrollphat.write_string("-")
+            scrollphat.write_string('-')
         elif (buttons & cwiid.BTN_HOME): #or (buttons & cwiid.BTN_A):
             break
 
@@ -944,62 +944,62 @@ if __name__ == '__main__': # The Program will start from here
     args = parser.parse_args()
     
     if ((str(args.RightSpeed)) != 'None'):
-        print '\nRight Speed - ',(str(args.RightSpeed))
+        print ('\nRight Speed - ',(str(args.RightSpeed)))
         rightspeed = args.RightSpeed
 
     if ((str(args.LeftSpeed)) != 'None'):
-        print 'Left Speed - ',(str(args.LeftSpeed))
+        print ('Left Speed - ',(str(args.LeftSpeed)))
         leftspeed = args.LeftSpeed
 
     if ((str(args.Speed)) != 'None'):
-        print '\nGeneral Speed - ',(str(args.Speed))
+        print ('\nGeneral Speed - ',(str(args.Speed)))
         speed = args.Speed
     
     if ((str(args.Brightness)) != 'None'):
-        print '\nscrollpHat Brightness - ',(str(args.Brightness))
+        print ('\nscrollpHat Brightness - ',(str(args.Brightness)))
         scrollphat.set_brightness(int(args.Brightness))
 
     if ((str(args.InnerTurnSpeed)) != 'None'):
-        print '\nInner Turn Speed - ',(str(args.InnerTurnSpeed))
+        print ('\nInner Turn Speed - ',(str(args.InnerTurnSpeed)))
         innerturnspeed = args.InnerTurnSpeed
     
     if ((str(args.OuterTurnSpeed)) != 'None'):
-        print '\nOuter Turn Speed - ',(str(args.OuterTurnSpeed))
+        print ('\nOuter Turn Speed - ',(str(args.OuterTurnSpeed)))
         outerturnspeed = args.OuterTurnSpeed
  
     if ((str(args.ShowCam)) != 'None'):
-        print '\nShow Cam Image - ',(str(args.ShowCam))
+        print ('\nShow Cam Image - ',(str(args.ShowCam)))
         showcam = args.ShowCam
     else:
         showcam = False
 
     if ((str(args.SoundVolume)) != 'None'):
-        print '\nSound Volume - ',(str(args.SoundVolume))
+        print ('\nSound Volume - ',(str(args.SoundVolume)))
         soundvolume = args.SoundVolume
     else:
         soundvolume = 100
         
-    print '\n\nSetting Up ...\n'
+    print ('\n\nSetting Up ...\n')
     scrollphat.clear()         # Clear Scroll pHat
-    scrollphat.write_string("Set")
+    scrollphat.write_string('Set')
     
     volumesetting = '"--volume=' + str(soundvolume) +'"'
-    subprocess.Popen(["mplayer",volumesetting, "Sound/Beginning.mp3"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    subprocess.Popen(['mplayer',volumesetting, 'Sound/Beginning.mp3'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
     setup()           # Setup all motors and Wii
 
-    print '\nGo ...\n\n'
+    print ('\nGo ...\n\n')
     scrollphat.clear()         # Clear Scroll pHat
-    scrollphat.write_string("Go")
+    scrollphat.write_string('Go')
 	
     try:
         maincontrol(showcam)    # Call main loop
         destroy()     # Shutdown
-        print "\n\n................... Exit .......................\n\n"
+        print ('\n\n................... Exit .......................\n\n')
         exit(0) # Exit Cleanly
     except KeyboardInterrupt:
         destroy()
-        print "\n\n................... Exit .......................\n\n"
+        print ('\n\n................... Exit .......................\n\n')
         exit(0) # Exit Cleanly
         
 # End of __Main__ Startup Loop 
