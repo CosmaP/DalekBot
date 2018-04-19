@@ -4,6 +4,7 @@ import RPi.GPIO as GPIO # Import the GPIO Library
 
 # Set variables for the GPIO motor pins
 # print '\n\nSet variables for the GPIO motor pins'
+
 pinMotorFRSpeed=33
 pinMotorFRForwards=35
 pinMotorFRBackwards=37
